@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js -- --username=Zhenya"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zhenya-band/file-manager.git"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
