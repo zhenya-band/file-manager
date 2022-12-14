@@ -11,7 +11,7 @@ process.stdin.on('data', async (data) => {
 
     if (command === ".exit") {
         Logger.printGoodbye()
-        process.exit();
+        process.exit(0);
     }
 
     if (command === "ls") {
@@ -21,7 +21,7 @@ process.stdin.on('data', async (data) => {
     }
 
     if (command === "cd") {
-        const path = args[1]
+        const path = args[1].trim();
         await FileSystem.cd(path);
         Logger.printCurrentDirectory()
     }
