@@ -1,4 +1,5 @@
 import FileSystem from './modules/FileSystem.js';
+import Hash from './modules/Hash.js';
 import Logger from './modules/Logger.js';
 import Os from './modules/Os.js';
 
@@ -89,6 +90,13 @@ process.stdin.on('data', async (data) => {
         const arg = args[1].trim();
 
         Os.getInfo(arg);
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "hash") {
+        const arg = args[1].trim();
+
+        Hash.calculate(arg);
         Logger.printCurrentDirectory()
     }
 
