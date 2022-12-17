@@ -3,7 +3,7 @@ import fs from 'fs';
 
 class Helpers {
 
-    constructor() {}
+    constructor() { }
 
     alphabeticallySortFiles = (a, b) => {
         if (a.name < b.name) {
@@ -29,6 +29,15 @@ class Helpers {
             return true;
         } catch (error) {
             throw Error(error);
+        }
+    }
+
+    async isFileExist(path) {
+        try {
+            await access(path, fs.constants.F_OK);
+            return true;
+        } catch (error) {
+            return false;
         }
     }
 }

@@ -22,7 +22,42 @@ process.stdin.on('data', async (data) => {
 
     if (command === "cd") {
         const path = args[1].trim();
+
         await FileSystem.cd(path);
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "up") {
+        await FileSystem.up();
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "cat") {
+        const path = args[1].trim();
+
+        await FileSystem.cat(path);
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "add") {
+        const newFileName = args[1].trim();
+
+        await FileSystem.add(newFileName);
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "rn") {
+        const pathToFile = args[1].trim();
+        const newFilename = args[2].trim();
+
+        await FileSystem.rn(pathToFile, newFilename);
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "rm") {
+        const pathToFile = args[1].trim();
+
+        await FileSystem.rm(pathToFile);
         Logger.printCurrentDirectory()
     }
 
