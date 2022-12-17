@@ -1,7 +1,8 @@
 import path, { resolve } from 'path';
 import os from 'os';
-import { readdir, open, rename, rm } from 'fs/promises';
-import { createReadStream } from 'node:fs';
+import { readdir, open, rename, rm, unlink } from 'fs/promises';
+import { pipeline } from 'node:stream/promises';
+import { createReadStream, createWriteStream } from 'node:fs';
 import Helpers from './Helpers.js';
 
 class FileSystem {
@@ -139,6 +140,53 @@ class FileSystem {
             this.cathError(error)
         }
     }
+
+    async cp(pathToFile, pathToNewDirectory) {
+        try {
+            const isAbsolutePathToFile = path.isAbsolute(pathToFile);
+            const resolvedPathToFile = isAbsolutePathToFile ? resolve(pathToFile) : resolve(path.join(this.currentDirectory, pathToFile));
+
+            const isAbsolutePathToDir = path.isAbsolute(pathToNewDirectory);
+            const resolvedPathToNewDirectory = isAbsolutePathToDir ? resolve(pathToNewDirectory) : resolve(path.join(this.currentDirectory, pathToNewDirectory));
+
+            const isExistFileExist = await Helpers.isFileExist(resolvedPathToFile);
+            const isDirFileExist = await Helpers.isDirectoryExist(resolvedPathToNewDirectory);
+
+            if (!isExistFileExist || !isDirFileExist) throw Error('File not exist');
+
+            const readStream = await createReadStream(resolvedPathToFile);
+            const writeStream = await createWriteStream(path.join(resolvedPathToNewDirectory, path.basename(resolvedPathToFile)));
+            await pipeline(readStream, writeStream);
+
+        } catch (error) {
+            this.cathError(error)
+        }
+    }
+
+    async mv(pathToFile, pathToNewDirectory) {
+        try {
+            await this.cp(pathToFile, pathToNewDirectory);
+
+            const isAbsolutePathToFile = path.isAbsolute(pathToFile);
+            const resolvedPathToFile = isAbsolutePathToFile ? resolve(pathToFile) : resolve(path.join(this.currentDirectory, pathToFile));
+            await unlink(resolvedPathToFile);
+
+        } catch (error) {
+            this.cathError(error)
+        }
+    }
+
+    async rm(pathToFile) {
+        try {
+            const isAbsolutePathToFile = path.isAbsolute(pathToFile);
+            const resolvedPathToFile = isAbsolutePathToFile ? resolve(pathToFile) : resolve(path.join(this.currentDirectory, pathToFile));
+            await unlink(resolvedPathToFile);
+
+        } catch (error) {
+            this.cathError(error)
+        }
+    }
+
 }
 
 export default new FileSystem();

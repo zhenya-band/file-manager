@@ -61,6 +61,29 @@ process.stdin.on('data', async (data) => {
         Logger.printCurrentDirectory()
     }
 
+    if (command === "cp") {
+        const pathToFile = args[1].trim();
+        const pathToNewDirectory = args[2].trim();
+
+        await FileSystem.cp(pathToFile, pathToNewDirectory);
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "mv") {
+        const pathToFile = args[1].trim();
+        const pathToNewDirectory = args[2].trim();
+
+        await FileSystem.mv(pathToFile, pathToNewDirectory);
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "rm") {
+        const pathToFile = args[1].trim();
+
+        await FileSystem.rm(pathToFile);
+        Logger.printCurrentDirectory()
+    }
+
 })
 
 process.on("SIGINT", () => {
