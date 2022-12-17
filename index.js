@@ -1,5 +1,6 @@
 import FileSystem from './modules/FileSystem.js';
 import Logger from './modules/Logger.js';
+import Os from './modules/Os.js';
 
 Logger.printHello();
 FileSystem.goToHomeDir();
@@ -81,6 +82,13 @@ process.stdin.on('data', async (data) => {
         const pathToFile = args[1].trim();
 
         await FileSystem.rm(pathToFile);
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "os") {
+        const arg = args[1].trim();
+
+        Os.getInfo(arg);
         Logger.printCurrentDirectory()
     }
 
