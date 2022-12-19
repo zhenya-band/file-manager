@@ -1,10 +1,11 @@
-import path, { resolve } from 'path';
+import path from 'path';
 import os from 'os';
-import { readdir, open, rename, rm, unlink } from 'fs/promises';
+import { readdir, open, rename, unlink } from 'fs/promises';
 import { pipeline } from 'node:stream/promises';
 import { createReadStream, createWriteStream } from 'node:fs';
-import Helpers from './Helpers.js';
+import Helpers from './FileSystemHelpers.js';
 import { resolvePath } from '../helpers/resolvePath.js';
+import { throwInvalidInput, throwOperationFailedError } from '../helpers/Errors.js';
 
 class FileSystem {
 
@@ -26,9 +27,7 @@ class FileSystem {
     }
 
     cathError(error) {
-        // !TODO remove console
-        console.error(error);
-        console.log(`Operation failed`);
+        console.log(error.message);
     }
 
     getFileType(file) {
@@ -57,12 +56,14 @@ class FileSystem {
 
     async cd(pathToDir) {
         try {
+            if (!pathToDir) throwInvalidInput();
+
             const resolvedPath = resolvePath(pathToDir);
 
-            await Helpers.isDirectoryExist(resolvedPath);
+            const isExist = await Helpers.isDirectoryExist(resolvedPath);
+            if (!isExist) throwOperationFailedError();
 
             this.currentDirectory = resolvedPath;
-
         } catch (error) {
             this.cathError(error)
         }
@@ -78,9 +79,12 @@ class FileSystem {
 
     async cat(pathToFile) {
         try {
-            const isAbsolutePath = path.isAbsolute(pathToFile);
-            const resolvedPath = isAbsolutePath ? resolve(pathToFile) : resolve(path.join(this.currentDirectory, pathToFile));
-            await Helpers.isFileExist(resolvedPath);
+            if (!pathToFile) throwInvalidInput();
+
+            const resolvedPath = resolvePath(pathToFile);
+
+            const isExist = await Helpers.isFileExist(resolvedPath);
+            if (!isExist) throwOperationFailedError();
 
             const readStream = await createReadStream(resolvedPath);
 
@@ -99,12 +103,12 @@ class FileSystem {
 
     async add(fileName) {
         try {
+            if (!fileName) throwInvalidInput();
+
             const pathToFile = path.join(this.currentDirectory, fileName);
             const isExist = await Helpers.isFileExist(pathToFile);
 
-            if (isExist) {
-                throw Error('File already exist');
-            }
+            if (isExist) throwOperationFailedError();
 
             const file = await open(pathToFile, "a");
             await file.close();
@@ -116,10 +120,11 @@ class FileSystem {
 
     async rn(pathToFile, newFilename) {
         try {
-            const isAbsolutePath = path.isAbsolute(pathToFile);
-            const oldPath = isAbsolutePath ? resolve(pathToFile) : resolve(path.join(this.currentDirectory, pathToFile));
+            if (!pathToFile || !newFilename) throwInvalidInput();
+
+            const oldPath = resolvePath(pathToFile);
             const isExist = await Helpers.isFileExist(oldPath);
-            if (!isExist) throw Error('File not exist');
+            if (!isExist) throwOperationFailedError();
 
             const newPath = path.join(path.dirname(oldPath), newFilename);
             await rename(oldPath, newPath);
@@ -128,36 +133,21 @@ class FileSystem {
         }
     }
 
-    async rm(pathToFile) {
-        try {
-            const isAbsolutePath = path.isAbsolute(pathToFile);
-            const resolvedPath = isAbsolutePath ? resolve(pathToFile) : resolve(path.join(this.currentDirectory, pathToFile));
-            const isExist = await Helpers.isFileExist(resolvedPath);
-            if (!isExist) throw Error('File not exist');
-
-            await rm(resolvedPath);
-        } catch (error) {
-            this.cathError(error)
-        }
-    }
-
     async cp(pathToFile, pathToNewDirectory) {
         try {
-            const isAbsolutePathToFile = path.isAbsolute(pathToFile);
-            const resolvedPathToFile = isAbsolutePathToFile ? resolve(pathToFile) : resolve(path.join(this.currentDirectory, pathToFile));
+            if (!pathToFile || !pathToNewDirectory) throwInvalidInput();
 
-            const isAbsolutePathToDir = path.isAbsolute(pathToNewDirectory);
-            const resolvedPathToNewDirectory = isAbsolutePathToDir ? resolve(pathToNewDirectory) : resolve(path.join(this.currentDirectory, pathToNewDirectory));
+            const resolvedPathToFile = resolvePath(pathToFile);
+            const resolvedPathToNewDirectory = resolvePath(pathToNewDirectory);
 
             const isExistFileExist = await Helpers.isFileExist(resolvedPathToFile);
             const isDirFileExist = await Helpers.isDirectoryExist(resolvedPathToNewDirectory);
 
-            if (!isExistFileExist || !isDirFileExist) throw Error('File not exist');
+            if (!isExistFileExist || !isDirFileExist) throwOperationFailedError();
 
             const readStream = await createReadStream(resolvedPathToFile);
             const writeStream = await createWriteStream(path.join(resolvedPathToNewDirectory, path.basename(resolvedPathToFile)));
             await pipeline(readStream, writeStream);
-
         } catch (error) {
             this.cathError(error)
         }
@@ -165,10 +155,11 @@ class FileSystem {
 
     async mv(pathToFile, pathToNewDirectory) {
         try {
+            if (!pathToFile || !pathToNewDirectory) throwInvalidInput();
+
             await this.cp(pathToFile, pathToNewDirectory);
 
-            const isAbsolutePathToFile = path.isAbsolute(pathToFile);
-            const resolvedPathToFile = isAbsolutePathToFile ? resolve(pathToFile) : resolve(path.join(this.currentDirectory, pathToFile));
+            const resolvedPathToFile = resolvePath(pathToFile);
             await unlink(resolvedPathToFile);
 
         } catch (error) {
@@ -178,9 +169,13 @@ class FileSystem {
 
     async rm(pathToFile) {
         try {
-            const isAbsolutePathToFile = path.isAbsolute(pathToFile);
-            const resolvedPathToFile = isAbsolutePathToFile ? resolve(pathToFile) : resolve(path.join(this.currentDirectory, pathToFile));
-            await unlink(resolvedPathToFile);
+            if (!pathToFile) throwInvalidInput();
+
+            const resolvedPath = resolvePath(pathToFile);
+            const isExist = await Helpers.isFileExist(resolvedPath);
+            if (!isExist) throwOperationFailedError();
+
+            await unlink(resolvedPath);
 
         } catch (error) {
             this.cathError(error)

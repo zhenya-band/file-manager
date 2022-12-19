@@ -7,7 +7,7 @@ class Os {
     constructor() { }
 
     getEol() {
-        return os.EOL;
+        return JSON.stringify(os.EOL);
     }
 
     getCpusInfo() {
@@ -38,6 +38,7 @@ class Os {
             case "--EOL":
                 const eol = this.getEol();
                 console.log(`eol: ${eol}`);
+                break;
             case "--cpus":
                 const { total, cpusInfo } = this.getCpusInfo();
                 console.log("Total cpus:", total);

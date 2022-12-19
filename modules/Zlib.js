@@ -1,9 +1,11 @@
 import { createReadStream, createWriteStream } from 'node:fs';
-import path, { join, resolve } from 'node:path';
+import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { createBrotliDecompress } from 'node:zlib';
 import { createBrotliCompress } from 'zlib';
-import FileSystem from './FileSystem.js';
+import { resolvePath } from '../helpers/resolvePath.js';
+import { throwInvalidInput, throwOperationFailedError } from '../helpers/Errors.js';
+import FileSystemHelpers from './FileSystemHelpers.js';
 
 class Zlib {
 
@@ -11,15 +13,15 @@ class Zlib {
 
     async compress(pathToSrc, pathToDest) {
         try {
+            if (!pathToSrc || !pathToDest) throwInvalidInput();
 
-            const isAbsolutePathSrc = path.isAbsolute(pathToSrc);
-            const resolvedPathToSrc = isAbsolutePathSrc ? resolve(pathToSrc) : resolve(FileSystem.currentDirectory, pathToSrc);
+            const resolvedPathToSrc = resolvePath(pathToSrc);
+            const resolvedPathToDest = resolvePath(pathToDest);
 
-            const isAbsolutePathDest = path.isAbsolute(pathToDest);
-            const resolvedPathToDest = isAbsolutePathDest ? resolve(pathToDest) : resolve(FileSystem.currentDirectory, pathToDest, path.basename(resolvedPathToSrc) + '.br');
+            const isSrcExist = await FileSystemHelpers.isFileExist(resolvedPathToSrc);
+            const isDestExist = await FileSystemHelpers.isDirectoryExist(resolvedPathToDest);
 
-            console.log("resolvedPathToSrc", resolvedPathToSrc);
-            console.log("resolvedPathToDest", resolvedPathToDest);
+            if (!isSrcExist || !isDestExist) throwOperationFailedError();
 
             await pipeline(
                 createReadStream(resolvedPathToSrc),
@@ -34,12 +36,13 @@ class Zlib {
 
     async decompress(pathToFile, pathToDest) {
         try {
-            const isAbsolutePathSrc = path.isAbsolute(pathToFile);
-            const resolvedPathToSrc = isAbsolutePathSrc ? resolve(pathToFile) : resolve(FileSystem.currentDirectory, pathToFile);
-            if (path.parse(resolvedPathToSrc).ext !== ".br") throw new Error("File is not a .br");
+            const resolvedPathToSrc = resolvePath(pathToFile);
+            const resolvedPathToDest = resolvePath(pathToDest);
+            const isDestDirectoryExist = await FileSystemHelpers.isDirectoryExist(resolvedPathToDest)
 
-            const isAbsolutePathDest = path.isAbsolute(pathToDest);
-            const resolvedPathToDest = isAbsolutePathDest ? resolve(pathToDest) : resolve(FileSystem.currentDirectory, pathToDest, path.parse(resolvedPathToSrc).name);
+            if (path.parse(resolvedPathToSrc).ext !== ".br") throwOperationFailedError();
+            if (!isDestDirectoryExist) throwOperationFailedError();
+
 
             await pipeline(
                 createReadStream(resolvedPathToSrc),

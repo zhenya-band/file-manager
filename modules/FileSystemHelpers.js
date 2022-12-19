@@ -1,7 +1,7 @@
 import { access } from 'fs/promises';
 import fs from 'fs';
 
-class Helpers {
+class FileSystemHelpers {
 
     constructor() { }
 
@@ -28,7 +28,7 @@ class Helpers {
             await access(path, fs.constants.F_OK);
             return true;
         } catch (error) {
-            throw Error(error);
+            return false;
         }
     }
 
@@ -42,4 +42,4 @@ class Helpers {
     }
 }
 
-export default new Helpers();
+export default new FileSystemHelpers();

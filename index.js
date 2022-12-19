@@ -57,10 +57,6 @@ process.stdin.on('data', async (data) => {
         await FileSystem.mv(arg1, arg2);
     }
 
-    if (command === "rm") {
-        await FileSystem.rm(arg1);
-    }
-
     if (command === "os") {
         Os.getInfo(arg1);
     }

@@ -1,7 +1,8 @@
-import FileSystem from './FileSystem.js';
-import path, { resolve, join } from 'path'
 import { readFile } from 'fs/promises';
 import { createHash } from 'crypto';
+import { resolvePath } from '../helpers/resolvePath.js';
+import FileSystemHelpers from './FileSystemHelpers.js';
+import { throwInvalidInput, throwOperationFailedError } from '../helpers/Errors.js';
 
 class Hash {
 
@@ -9,8 +10,12 @@ class Hash {
 
     async calculate(pathToFile) {
         try {
-            const isAbsolutePath = path.isAbsolute(pathToFile);
-            const resolvedPath = isAbsolutePath ? resolve(pathToFile) : resolve(join(FileSystem.currentDirectory, pathToFile));
+            if (!pathToFile) throwInvalidInput();
+
+            const resolvedPath = resolvePath(pathToFile);
+            const isFileExist = await FileSystemHelpers.isFileExist(resolvedPath);
+
+            if (!isFileExist) throwOperationFailedError();
 
             const content = await readFile(resolvedPath, { encoding: 'utf8' })
             const hash = createHash('sha256').update(content).digest('hex');
