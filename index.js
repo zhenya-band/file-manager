@@ -2,6 +2,7 @@ import FileSystem from './modules/FileSystem.js';
 import Hash from './modules/Hash.js';
 import Logger from './modules/Logger.js';
 import Os from './modules/Os.js';
+import Zlib from './modules/Zlib.js';
 
 Logger.printHello();
 FileSystem.goToHomeDir();
@@ -12,8 +13,7 @@ process.stdin.on('data', async (data) => {
     const command = args[0].trim();
 
     if (command === ".exit") {
-        Logger.printGoodbye()
-        process.exit(0);
+        process.exit();
     }
 
     if (command === "ls") {
@@ -100,8 +100,28 @@ process.stdin.on('data', async (data) => {
         Logger.printCurrentDirectory()
     }
 
+    if (command === "compress") {
+        const arg1 = args[1].trim();
+        const arg2 = args[2].trim();
+
+        Zlib.compress(arg1, arg2)
+        Logger.printCurrentDirectory()
+    }
+
+    if (command === "decompress") {
+        const arg1 = args[1].trim();
+        const arg2 = args[2].trim();
+
+        Zlib.decompress(arg1, arg2)
+        Logger.printCurrentDirectory()
+    }
+
 })
 
-process.on("SIGINT", () => {
-    Logger.printGoodbye()
-})
+process
+    .on("SIGINT", () => {
+        process.exit();
+    })
+    .on("exit", () => {
+        Logger.printGoodbye()
+    });
