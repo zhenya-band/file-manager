@@ -4,6 +4,7 @@ import { readdir, open, rename, rm, unlink } from 'fs/promises';
 import { pipeline } from 'node:stream/promises';
 import { createReadStream, createWriteStream } from 'node:fs';
 import Helpers from './Helpers.js';
+import { resolvePath } from '../helpers/resolvePath.js';
 
 class FileSystem {
 
@@ -56,8 +57,7 @@ class FileSystem {
 
     async cd(pathToDir) {
         try {
-            const isAbsolutePath = path.isAbsolute(pathToDir);
-            const resolvedPath = isAbsolutePath ? resolve(pathToDir) : resolve(path.join(this.currentDirectory, pathToDir));
+            const resolvedPath = resolvePath(pathToDir);
 
             await Helpers.isDirectoryExist(resolvedPath);
 

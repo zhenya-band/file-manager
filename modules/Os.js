@@ -1,6 +1,6 @@
 import os from 'os';
 import FileSystem from './FileSystem.js';
-import { getUsername } from './args.js';
+import { getUsername } from '../helpers/getUsername.js';
 
 class Os {
 
@@ -37,20 +37,20 @@ class Os {
         switch (key) {
             case "--EOL":
                 const eol = this.getEol();
-                console.log(eol);
+                console.log(`eol: ${eol}`);
             case "--cpus":
                 const { total, cpusInfo } = this.getCpusInfo();
-                console.log("Total:", total);
+                console.log("Total cpus:", total);
                 console.table(cpusInfo);
                 break;
             case "--homedir":
-                console.log(this.getHomedir());
+                console.log(`Home dir: ${this.getHomedir()}`);
                 break;
             case "--username":
-                console.log(this.getUsername());
+                console.log(`Username: ${this.getUsername()}`);
                 break;
             case "--architecture":
-                console.log(this.getArchitecture());
+                console.log(`architecture: ${this.getArchitecture()}`);
                 break;
             default:
                 console.log("Invalid input");

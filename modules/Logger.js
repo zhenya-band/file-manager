@@ -1,4 +1,4 @@
-import { getUsername } from './args.js';
+import { getUsername } from '../helpers/getUsername.js';
 import FileSystem from './FileSystem.js'
 
 class Logger {
@@ -22,6 +22,10 @@ class Logger {
 
     logTable(data) {
         console.table(data);
+    }
+
+    printInvalidInput() {
+        console.log('Invalid input');
     }
 }
 
